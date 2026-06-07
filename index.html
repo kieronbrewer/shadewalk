@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShadeWalk - Find Shady Walking Paths Near You</title>
+  <meta name="description" content="Enter your location, walking distance, time of day, and fitness level to discover walking paths and loops that are shaded from the sun.">
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  
+  <!-- Custom Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- Sidebar Control Panel -->
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-icon">🌳</div>
+        <div class="logo-text">
+          <h1>ShadeWalk</h1>
+          <p>US Canopy Navigator</p>
+        </div>
+      </div>
+      
+      <div class="panel-content">
+        <!-- Mode Navigation Tabs -->
+        <div class="mode-tabs">
+          <button type="button" class="tab-btn active" id="tab-loop">🔄 Loop Walk</button>
+          <button type="button" class="tab-btn" id="tab-atob">📍 Point-to-Point</button>
+        </div>
+
+        <!-- Input Form -->
+        <form id="control-form" onsubmit="return false;">
+          
+          <!-- Location Input (Start) -->
+          <div class="form-group">
+            <label class="form-label" id="search-label" for="search-input">Starting Location</label>
+            <div class="input-wrapper">
+              <span class="input-icon">📍</span>
+              <input type="text" id="search-input" class="form-input" placeholder="City, Zip, or Address..." autocomplete="off" required>
+            </div>
+            <!-- Autocomplete suggestions dropdown -->
+            <div id="autocomplete-list" class="autocomplete-list" style="display: none;"></div>
+          </div>
+
+          <!-- Destination Input (A-to-B Mode) -->
+          <div class="form-group" id="destination-group" style="display: none;">
+            <label class="form-label" for="destination-input">Destination Location</label>
+            <div class="input-wrapper">
+              <span class="input-icon">🏁</span>
+              <input type="text" id="destination-input" class="form-input" placeholder="Address, Landmark, or City..." autocomplete="off">
+            </div>
+            <div id="destination-autocomplete-list" class="autocomplete-list" style="display: none;"></div>
+          </div>
+          
+          <!-- Distance Input (Loop Mode) -->
+          <div class="form-group slider-container" id="distance-group">
+            <label class="form-label" for="distance-slider">
+              Walk Distance
+              <span class="value" id="distance-value">1.5 mi</span>
+            </label>
+            <input type="range" id="distance-slider" class="custom-range" min="0.5" max="3.0" step="0.25" value="1.5">
+          </div>
+          
+          <!-- Date/Time Inputs -->
+          <div class="form-group">
+            <label class="form-label" for="date-input">Date</label>
+            <div class="input-wrapper">
+              <span class="input-icon">📅</span>
+              <input type="date" id="date-input" class="form-input" required style="padding-left: 40px;">
+            </div>
+          </div>
+          
+          <div class="form-group slider-container">
+            <label class="form-label" for="time-slider">
+              Walk Time
+              <span class="value" id="time-value">10:00 AM</span>
+            </label>
+            <input type="range" id="time-slider" class="custom-range" min="360" max="1200" step="15" value="600">
+            
+            <div class="solar-preview">
+              <span>Solar State:</span>
+              <div class="sun-position" id="solar-preview-text">
+                ☀️ <span>Azimuth: --°, Elevation: --°</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Fitness Level Segmented Control -->
+          <div class="form-group">
+            <label class="form-label">Your Fitness Level</label>
+            <div class="fitness-group">
+              <button type="button" class="fitness-btn active" data-level="beginner">
+                <span>🚶</span>
+                <span>Beginner</span>
+              </button>
+              <button type="button" class="fitness-btn" data-level="intermediate">
+                <span>🏃</span>
+                <span>Moderate</span>
+              </button>
+              <button type="button" class="fitness-btn" data-level="advanced">
+                <span>🧭</span>
+                <span>Active</span>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Find Paths Button -->
+          <button type="submit" id="find-button" class="submit-btn">
+            <span>🔍</span> Find Shady Paths
+          </button>
+          
+        </form>
+
+        <hr style="border: none; border-top: 1px solid var(--border-color); margin: 8px 0;">
+
+        <!-- Dynamic Results Section -->
+        <div id="results-section" style="display: none;">
+          <h2 class="routes-title">Recommended Shady Walks</h2>
+          <div id="routes-list" class="routes-container">
+            <!-- Route Cards will be injected here -->
+          </div>
+        </div>
+
+        <!-- Initial Welcome / Empty State -->
+        <div id="welcome-state" class="empty-state">
+          <div class="empty-state-icon">🌳</div>
+          <h3>Plan Your Cool Walk</h3>
+          <p>Enter your location and target walking time to generate custom loops that maximize tree canopy and building shadow.</p>
+        </div>
+
+      </div>
+    </aside>
+    
+    <!-- Map Canvas -->
+    <main class="map-container">
+      <!-- Loading Overlay -->
+      <div id="loading-overlay" class="loading-overlay">
+        <div class="spinner"></div>
+        <div id="loading-text" class="loading-text">Fetching street and trail network...</div>
+      </div>
+      
+      <!-- Floating Solar Widget -->
+      <div class="solar-widget" id="solar-widget" style="display: none;">
+        <div class="solar-widget-sun"></div>
+        <div class="solar-widget-info">
+          <span class="solar-widget-title">Sun Angles</span>
+          <span class="solar-widget-value" id="solar-widget-value">Az: --° | El: --°</span>
+        </div>
+      </div>
+      
+      <!-- The Map Div -->
+      <div id="map"></div>
+    </main>
+
+  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  
+  <!-- App JS Script Modules -->
+  <script type="module" src="js/app.js"></script>
+
+</body>
+</html>
