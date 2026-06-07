@@ -78,6 +78,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupDefaults();
   initMap();
   setupEventListeners();
+  detectUserLocation();
 });
 
 /**
@@ -770,4 +771,72 @@ function findNearestNodeInOsmData(lat, lon) {
     }
   }
   return best;
+}
+
+/**
+ * Detects the user's approximate or exact location on load.
+ */
+function detectUserLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      // Success callback
+      async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+        
+        state.currentLocation.lat = lat;
+        state.currentLocation.lon = lon;
+        
+        // Pan map and update marker
+        state.map.setView([lat, lon], 15);
+        updateStartMarker();
+        updateSolarAngles();
+        
+        // Reverse geocode to get a readable address name
+        try {
+          const res = await fetch(`https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`);
+          if (res.ok) {
+            const data = await res.json();
+            state.currentLocation.name = data.display_name;
+            el.searchInput.value = data.display_name;
+          }
+        } catch (err) {
+          console.error("Reverse geocoding failed", err);
+          el.searchInput.value = `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+        }
+      },
+      // Error callback (e.g. denied permission)
+      (error) => {
+        console.warn("Geolocation permission denied or failed, falling back to IP lookup.", error);
+        fallbackToIPLocation();
+      },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    );
+  } else {
+    fallbackToIPLocation();
+  }
+}
+
+/**
+ * Fallback to IP geolocation if browser GPS is unavailable or denied.
+ */
+async function fallbackToIPLocation() {
+  try {
+    const res = await fetch('https://ipapi.co/json/');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.latitude && data.longitude) {
+        state.currentLocation.lat = data.latitude;
+        state.currentLocation.lon = data.longitude;
+        state.currentLocation.name = `${data.city}, ${data.region}, United States`;
+        
+        el.searchInput.value = state.currentLocation.name;
+        state.map.setView([data.latitude, data.longitude], 13);
+        updateStartMarker();
+        updateSolarAngles();
+      }
+    }
+  } catch (err) {
+    console.error("IP geolocation failed, staying at default location.", err);
+  }
 }
