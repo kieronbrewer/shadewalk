@@ -93,10 +93,24 @@ function setupDefaults() {
   el.dateInput.value = `${year}-${month}-${day}`;
   state.walkDate = today;
 
-  // Set default time (10:00 AM = 600)
-  el.timeSlider.value = 600;
-  state.walkMinutes = 600;
-  updateTimeDisplay(600);
+  // Calculate current minutes from midnight based on browser local time
+  const currentHours = today.getHours();
+  const currentMins = today.getMinutes();
+  let minutes = currentHours * 60 + currentMins;
+
+  // Round up to the next 15-minute increment (e.g. 1:02 PM -> 1:15 PM)
+  minutes = Math.ceil(minutes / 15) * 15;
+
+  // Clamp to daytime slider boundaries (360 = 6:00 AM, 1200 = 8:00 PM)
+  if (minutes < 360) {
+    minutes = 360;
+  } else if (minutes > 1200) {
+    minutes = 1200;
+  }
+
+  el.timeSlider.value = minutes;
+  state.walkMinutes = minutes;
+  updateTimeDisplay(minutes);
 
   // Update solar angle preview
   updateSolarAngles();
