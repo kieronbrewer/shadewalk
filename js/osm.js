@@ -4,7 +4,12 @@
  * Builds a local routing graph from geographical data.
  */
 
-const OVERPASS_URL = 'https://overpass-api.de/api/interpreter';
+const OVERPASS_ENDPOINTS = [
+  'https://overpass-api.de/api/interpreter',
+  'https://overpass.kumi.systems/api/interpreter',
+  'https://overpass.openstreetmap.fr/api/interpreter',
+  'https://overpass.osm.ch/api/interpreter'
+];
 const NOMINATIM_URL = 'https://nominatim.openstreetmap.org/search';
 
 // Custom User-Agent to comply with Nominatim/Overpass usage policies
@@ -120,21 +125,41 @@ export async function fetchOSMData(locationParam, lon, radius) {
     `;
   }
 
-  const response = await fetch(OVERPASS_URL, {
-    method: 'POST',
-    body: `data=${encodeURIComponent(query)}`,
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded',
-      'Accept': 'application/json'
-    }
-  });
+  let lastError = null;
 
-  if (!response.ok) {
-    throw new Error(`Overpass API error: ${response.statusText}`);
+  for (const endpoint of OVERPASS_ENDPOINTS) {
+    try {
+      console.log(`Querying Overpass server: ${endpoint}`);
+      
+      // Implement a 12-second timeout per fetch request to fail fast on overloaded servers
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        body: `data=${encodeURIComponent(query)}`,
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Accept': 'application/json'
+        },
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`Server returned status ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      return processOSMData(data, centerLat, centerLon);
+    } catch (error) {
+      console.warn(`Overpass server ${endpoint} failed or timed out:`, error);
+      lastError = error;
+    }
   }
 
-  const data = await response.json();
-  return processOSMData(data, centerLat, centerLon);
+  throw new Error(`All Overpass API mirrors failed or timed out. Last error: ${lastError ? lastError.message : 'Unknown'}`);
 }
 
 /**
