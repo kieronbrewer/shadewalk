@@ -388,12 +388,16 @@ function fitMarkersInView() {
   }
 }
 
-/**
- * Show the loading spinner and message.
- */
 function showLoading(text) {
   el.loadingText.innerText = text;
   el.loadingOverlay.classList.add('active');
+  
+  if (el.findButton) {
+    el.findButton.disabled = true;
+    // Extract short phase text (e.g. "Downloading local street network")
+    const shortText = text.includes('...') ? text.split('...')[0] : text;
+    el.findButton.innerHTML = `<span>⏳</span> ${shortText}...`;
+  }
 }
 
 /**
@@ -401,6 +405,11 @@ function showLoading(text) {
  */
 function hideLoading() {
   el.loadingOverlay.classList.remove('active');
+  
+  if (el.findButton) {
+    el.findButton.disabled = false;
+    el.findButton.innerHTML = `<span>🔍</span> Find Shady Paths`;
+  }
 }
 
 /**
