@@ -25,6 +25,8 @@ const state = {
   routes: [],       // Generated loops or point-to-point paths
   activeRouteIdx: null,
   map: null,
+  weatherForecast: null, // Hourly cloud cover forecast
+  cloudCover: 0,        // Current rounded cloud cover %
   layers: {
     polylines: [],   // Route segment lines
     startMarker: null,
@@ -277,10 +279,24 @@ function updateSolarAngles() {
   const az = Math.round(sun.azimuth);
   const elVal = Math.round(sun.elevation);
   
-  const desc = elVal <= 0 ? '🌅 Night' : `☀️ Azimuth: ${az}°, Elev: ${elVal}°`;
-  el.solarPreviewText.innerHTML = `<span>${desc}</span>`;
+  let desc = elVal <= 0 ? '🌅 Night' : `☀️ Az: ${az}°, El: ${elVal}°`;
   
-  el.solarWidgetValue.innerText = `Az: ${az}° | El: ${elVal}°`;
+  // Format cloud cover description
+  const cc = state.cloudCover;
+  let weatherDesc = '';
+  if (cc <= 20) {
+    weatherDesc = `☀️ Clear (${cc}%)`;
+  } else if (cc <= 50) {
+    weatherDesc = `⛅ Pt. Cloudy (${cc}%)`;
+  } else if (cc <= 80) {
+    weatherDesc = `🌥️ M. Cloudy (${cc}%)`;
+  } else {
+    weatherDesc = `☁️ Overcast (${cc}%)`;
+  }
+  
+  el.solarPreviewText.innerHTML = `<span>${desc} | ${weatherDesc}</span>`;
+  
+  el.solarWidgetValue.innerText = `Az: ${az}° | El: ${elVal}° | ${cc}% Cloud`;
 }
 
 /**
@@ -474,7 +490,13 @@ async function fetchAndGenerateWalks() {
   }
 
   try {
+    // Fetch local weather forecast
+    showLoading('Downloading local weather forecast...');
+    await fetchWeatherData(state.currentLocation.lat, state.currentLocation.lon);
+    updateCloudCover();
+
     let sun = getSolarPosition(state.walkDate, state.currentLocation.lat, state.currentLocation.lon);
+    sun.cloudCover = state.cloudCover;
 
     if (state.mode === 'loop') {
       // Loop Mode: Radial Query
@@ -751,7 +773,11 @@ function zoomToActiveRoute() {
 function triggerLiveShadeRecalculation() {
   if (!state.osmData || state.routes.length === 0) return;
 
+  // Recalculate cloud cover for the new walk date/time
+  updateCloudCover();
+
   const sun = getSolarPosition(state.walkDate, state.currentLocation.lat, state.currentLocation.lon);
+  sun.cloudCover = state.cloudCover;
 
   state.routes.forEach(route => {
     let totalShadeSum = 0;
@@ -863,3 +889,57 @@ async function fallbackToIPLocation() {
     console.error("IP geolocation failed, staying at default location.", err);
   }
 }
+
+/**
+ * Fetches the 7-day hourly cloud cover forecast from Open-Meteo API.
+ */
+async function fetchWeatherData(lat, lon) {
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=cloud_cover&timezone=auto`;
+    const response = await fetch(url);
+    if (!response.ok) throw new Error('Weather forecast fetch failed');
+    const data = await response.json();
+    if (data.hourly && data.hourly.time && data.hourly.cloud_cover) {
+      state.weatherForecast = {
+        times: data.hourly.time.map(t => new Date(t)),
+        cloudCovers: data.hourly.cloud_cover
+      };
+      console.log('Successfully fetched cloud cover forecast:', state.weatherForecast);
+    }
+  } catch (err) {
+    console.warn("Could not retrieve weather forecast, defaulting to clear skies:", err);
+    state.weatherForecast = null;
+    state.cloudCover = 0;
+  }
+}
+
+/**
+ * Parses the weather forecast and updates state.cloudCover for the active walkDate.
+ */
+function updateCloudCover() {
+  if (!state.weatherForecast) {
+    state.cloudCover = 0;
+    return;
+  }
+
+  const walkTime = state.walkDate.getTime();
+  let bestIdx = 0;
+  let minDiff = Infinity;
+
+  // Find the forecast hour closest to the walkDate
+  state.weatherForecast.times.forEach((time, idx) => {
+    const diff = Math.abs(time.getTime() - walkTime);
+    if (diff < minDiff) {
+      minDiff = diff;
+      bestIdx = idx;
+    }
+  });
+
+  // If the closest forecast is more than 3 hours away, default to 0 (forecast expired/far future)
+  if (minDiff > 3 * 60 * 60 * 1000) {
+    state.cloudCover = 0;
+  } else {
+    state.cloudCover = state.weatherForecast.cloudCovers[bestIdx];
+  }
+}
+

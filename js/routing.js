@@ -175,10 +175,10 @@ function dijkstra(startId, targetId, graph, nodes, sunPosition, shadeImportance,
       // Calculate shade for this segment
       const shade = calculateSegmentShade(uNode, vNode, edge.bearing, sunPosition);
 
-      // Cost function: penalize sun exposure
-      // If shade is 1.0 (shade), penalty is 0, cost is distance.
-      // If shade is 0.0 (sun), cost is distance * (1 + shadeImportance)
-      let costMultiplier = 1 + (1 - shade) * shadeImportance;
+      // Cost function: penalize sun exposure scaled by cloud cover (sun intensity)
+      const cloudCover = sunPosition.cloudCover !== undefined ? sunPosition.cloudCover : 0;
+      const sunIntensity = Math.max(0, 1 - (cloudCover / 100));
+      let costMultiplier = 1 + (1 - shade) * shadeImportance * sunIntensity;
 
       // Extra penalty if this specific edge was already traversed (to force loops)
       const edgeKey = `${Math.min(currId, vId)}-${Math.max(currId, vId)}`;
