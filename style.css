@@ -93,7 +93,7 @@ body {
   height: 100vh;
   z-index: 10;
   box-shadow: var(--shadow-lg);
-  overflow-y: auto;
+  overflow: hidden;
 }
 
 .sidebar-header {
@@ -181,6 +181,7 @@ body {
   flex-direction: column;
   gap: 24px;
   flex: 1;
+  overflow-y: auto;
 }
 
 #control-form {
@@ -866,4 +867,44 @@ body {
   margin: 12px 0;
   word-break: break-all;
   text-align: center;
+}
+
+/* Sidebar Footer & About Button */
+.sidebar-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border-color);
+  background-color: var(--bg-main);
+  display: flex;
+  justify-content: center;
+}
+
+.footer-about-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 8px 16px;
+  width: 100%;
+  color: var(--text-secondary);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.footer-about-btn:hover {
+  color: var(--text-primary);
+  background-color: var(--bg-deep);
+  border-color: var(--accent-shade);
+}
+
+.footer-about-btn.active {
+  color: var(--text-primary);
+  background: var(--gradient-brand);
+  border-color: transparent;
+  box-shadow: 0 0 10px rgba(20, 184, 166, 0.2);
 }
