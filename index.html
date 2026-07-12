@@ -44,6 +44,7 @@
         <div class="mode-tabs">
           <button type="button" class="tab-btn active" id="tab-loop">🔄 Loop Walk</button>
           <button type="button" class="tab-btn" id="tab-atob">📍 Point-to-Point</button>
+          <button type="button" class="tab-btn" id="tab-about">📖 About</button>
         </div>
 
         <!-- Input Form -->
@@ -144,6 +145,49 @@
           <div class="empty-state-icon">🌳</div>
           <h3>Plan Your Cool Walk</h3>
           <p>Enter your location and target walking time to generate custom loops that maximize tree canopy and building shadow.</p>
+        </div>
+
+        <!-- About Section -->
+        <div id="about-section" class="about-container" style="display: none;">
+          <div class="about-content">
+            <h2>About ShadeWalk</h2>
+            <p class="about-author">
+              Created by <strong><a href="https://www.linkedin.com/in/kieronbrewer" target="_blank" rel="noopener">Kieron Brewer</a></strong> using <strong>Google Antigravity</strong>.
+            </p>
+            
+            <div class="about-divider"></div>
+            
+            <h3>Overview</h3>
+            <p>ShadeWalk is a smart pedestrian routing web application designed to help walkers, runners, and dog-walkers find paths that maximize shade from trees and buildings, minimizing direct sun exposure.</p>
+            
+            <h3>How It Works</h3>
+            <p>ShadeWalk calculates real-time pedestrian routes using current solar geometry, street orientation, and weather conditions. It supports two primary modes:</p>
+            <ul>
+              <li><strong>Loop Walk</strong>: Generates a natural walking circuit of a target distance starting and ending at the same location. It selects pivot nodes in different compass directions (North, East, South, West) and applies weight penalties on return paths to avoid retracing steps.</li>
+              <li><strong>Point-to-Point</strong>: Finds the shadiest path between a starting location and a destination.</li>
+            </ul>
+
+            <h3>Core Technology & Algorithms</h3>
+            
+            <h4>Solar Geometry Calculations</h4>
+            <p>Rather than relying on external APIs for solar data, ShadeWalk includes a pure JavaScript implementation of NOAA's solar position algorithms. It calculates the sun's exact <strong>azimuth</strong> (compass angle) and <strong>elevation</strong> (angle above the horizon) in real-time based on your geographic coordinates, current date, and time.</p>
+            
+            <h4>Dijkstra Heuristic Cost Routing</h4>
+            <p>To calculate paths, the app runs a custom Dijkstra shortest-path algorithm over street network graphs. The cost function dynamically weights edges based on their exposure to the sun:</p>
+            <div class="code-block-display">
+              Edge Cost = Distance &times; (1 + (1 - Shade Score) &times; Shade Importance &times; (1 - Cloud Cover / 100))
+            </div>
+            <ul>
+              <li><strong>Shade Score</strong>: Computed dynamically per street segment by comparing the street's angle to the sun's azimuth, combined with tree canopy density markers imported from OpenStreetMap.</li>
+              <li><strong>Cloud Cover Integration</strong>: Fetches real-time cloud data from the Open-Meteo API. If the sky is overcast (100% cloud cover), the sun penalty scales down to 0, yielding the standard physical shortest route.</li>
+            </ul>
+            
+            <h4>High-Availability OpenStreetMap Fetching</h4>
+            <p>Street graphs and canopy data are retrieved on-demand from the OpenStreetMap database. To avoid query failures during public server outages, the app uses a failover system rotating through four public Overpass API mirrors with a 12-second abort timeout per request.</p>
+
+            <h3>Privacy-Focused Analytics</h3>
+            <p>To track website traffic without displaying intrusive cookie banners or violating user privacy, ShadeWalk is integrated with a self-hosted instance of <strong>Plausible Analytics</strong>. It is completely cookie-free and tracks absolutely no personally identifiable information (PII).</p>
+          </div>
         </div>
 
       </div>

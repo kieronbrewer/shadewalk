@@ -41,6 +41,7 @@ const el = {
   // Tabs
   tabLoop: document.getElementById('tab-loop'),
   tabAtoB: document.getElementById('tab-atob'),
+  tabAbout: document.getElementById('tab-about'),
   
   // Starting Input
   searchLabel: document.getElementById('search-label'),
@@ -63,11 +64,13 @@ const el = {
   timeValue: document.getElementById('time-value'),
   fitnessBtns: document.querySelectorAll('.fitness-btn'),
   findButton: document.getElementById('find-button'),
+  controlForm: document.getElementById('control-form'),
   
   // Containers
   welcomeState: document.getElementById('welcome-state'),
   resultsSection: document.getElementById('results-section'),
   routesList: document.getElementById('routes-list'),
+  aboutSection: document.getElementById('about-section'),
   loadingOverlay: document.getElementById('loading-overlay'),
   loadingText: document.getElementById('loading-text'),
   solarPreviewText: document.getElementById('solar-preview-text'),
@@ -146,6 +149,7 @@ function setupEventListeners() {
     state.mode = 'loop';
     el.tabLoop.classList.add('active');
     el.tabAtoB.classList.remove('active');
+    el.tabAbout.classList.remove('active');
     
     // UI layout updates
     el.searchLabel.innerText = 'Starting Location';
@@ -153,12 +157,26 @@ function setupEventListeners() {
     el.destinationGroup.style.display = 'none';
     el.distanceGroup.style.display = 'flex';
     el.destinationInput.required = false;
+
+    // Show/hide sections
+    el.controlForm.style.display = 'block';
+    el.aboutSection.style.display = 'none';
+    
+    // Restore results or welcome state
+    if (state.routes && state.routes.length > 0) {
+      el.welcomeState.style.display = 'none';
+      el.resultsSection.style.display = 'block';
+    } else {
+      el.welcomeState.style.display = 'block';
+      el.resultsSection.style.display = 'none';
+    }
   });
 
   el.tabAtoB.addEventListener('click', () => {
     state.mode = 'atob';
     el.tabAtoB.classList.add('active');
     el.tabLoop.classList.remove('active');
+    el.tabAbout.classList.remove('active');
     
     // UI layout updates
     el.searchLabel.innerText = 'Starting Point';
@@ -166,6 +184,32 @@ function setupEventListeners() {
     el.destinationGroup.style.display = 'flex';
     el.distanceGroup.style.display = 'none';
     el.destinationInput.required = true;
+
+    // Show/hide sections
+    el.controlForm.style.display = 'block';
+    el.aboutSection.style.display = 'none';
+    
+    // Restore results or welcome state
+    if (state.routes && state.routes.length > 0) {
+      el.welcomeState.style.display = 'none';
+      el.resultsSection.style.display = 'block';
+    } else {
+      el.welcomeState.style.display = 'block';
+      el.resultsSection.style.display = 'none';
+    }
+  });
+
+  el.tabAbout.addEventListener('click', () => {
+    state.mode = 'about';
+    el.tabAbout.classList.add('active');
+    el.tabLoop.classList.remove('active');
+    el.tabAtoB.classList.remove('active');
+
+    // Show/hide sections
+    el.controlForm.style.display = 'none';
+    el.welcomeState.style.display = 'none';
+    el.resultsSection.style.display = 'none';
+    el.aboutSection.style.display = 'block';
   });
 
   // 2. Start Location Nominatim Autocomplete
