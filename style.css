@@ -17,7 +17,7 @@
   /* Typography Colors */
   --text-primary: hsl(220, 15%, 95%);
   --text-secondary: hsl(220, 10%, 75%);
-  --text-muted: hsl(220, 10%, 55%);
+  --text-muted: hsl(220, 10%, 65%);
 
   /* Accent Colors */
   --accent-shade: hsl(142, 72%, 45%);      /* Vibrant Green */
@@ -908,4 +908,14 @@ body {
   background: var(--gradient-brand);
   border-color: transparent;
   box-shadow: 0 0 10px rgba(20, 184, 166, 0.2);
+}
+
+/* Visible focus indicator for keyboard navigation compliance */
+button:focus-visible,
+input:focus-visible,
+[role="button"]:focus-visible,
+input[type="range"]:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.4);
 }

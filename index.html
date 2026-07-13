@@ -51,7 +51,7 @@
     <!-- Sidebar Control Panel -->
     <aside class="sidebar">
       <div class="sidebar-header">
-        <div class="logo-icon">🌳</div>
+        <div class="logo-icon" aria-hidden="true">🌳</div>
         <div class="logo-text">
           <h1>ShadeWalk</h1>
           <p>US Canopy Navigator</p>
@@ -72,7 +72,7 @@
           <div class="form-group">
             <label class="form-label" id="search-label" for="search-input">Starting Location</label>
             <div class="input-wrapper">
-              <span class="input-icon">📍</span>
+              <span class="input-icon" aria-hidden="true">📍</span>
               <input type="text" id="search-input" class="form-input" placeholder="City, Zip, or Address..." autocomplete="off" required>
             </div>
             <!-- Autocomplete suggestions dropdown -->
@@ -83,7 +83,7 @@
           <div class="form-group" id="destination-group" style="display: none;">
             <label class="form-label" for="destination-input">Destination Location</label>
             <div class="input-wrapper">
-              <span class="input-icon">🏁</span>
+              <span class="input-icon" aria-hidden="true">🏁</span>
               <input type="text" id="destination-input" class="form-input" placeholder="Address, Landmark, or City..." autocomplete="off">
             </div>
             <div id="destination-autocomplete-list" class="autocomplete-list" style="display: none;"></div>
@@ -95,14 +95,14 @@
               Walk Distance
               <span class="value" id="distance-value">1.5 mi</span>
             </label>
-            <input type="range" id="distance-slider" class="custom-range" min="0.5" max="3.0" step="0.25" value="1.5">
+            <input type="range" id="distance-slider" class="custom-range" min="0.5" max="3.0" step="0.25" value="1.5" aria-label="Walk Distance">
           </div>
           
           <!-- Date/Time Inputs -->
           <div class="form-group">
             <label class="form-label" for="date-input">Date</label>
             <div class="input-wrapper">
-              <span class="input-icon">📅</span>
+              <span class="input-icon" aria-hidden="true">📅</span>
               <input type="date" id="date-input" class="form-input" required style="padding-left: 40px;">
             </div>
           </div>
@@ -112,7 +112,7 @@
               Walk Time
               <span class="value" id="time-value">10:00 AM</span>
             </label>
-            <input type="range" id="time-slider" class="custom-range" min="360" max="1200" step="15" value="600">
+            <input type="range" id="time-slider" class="custom-range" min="360" max="1200" step="15" value="600" aria-label="Walk Time">
             
             <div class="solar-preview">
               <span>Solar State:</span>
@@ -127,15 +127,15 @@
             <label class="form-label">Your Fitness Level</label>
             <div class="fitness-group">
               <button type="button" class="fitness-btn active" data-level="beginner">
-                <span>🚶</span>
+                <span aria-hidden="true">🚶</span>
                 <span>Beginner</span>
               </button>
               <button type="button" class="fitness-btn" data-level="intermediate">
-                <span>🏃</span>
+                <span aria-hidden="true">🏃</span>
                 <span>Moderate</span>
               </button>
               <button type="button" class="fitness-btn" data-level="advanced">
-                <span>🧭</span>
+                <span aria-hidden="true">🧭</span>
                 <span>Active</span>
               </button>
             </div>
@@ -143,7 +143,7 @@
           
           <!-- Find Paths Button -->
           <button type="submit" id="find-button" class="submit-btn">
-            <span>🔍</span> Find Shady Paths
+            <span aria-hidden="true">🔍</span> Find Shady Paths
           </button>
           
         </form>
@@ -160,7 +160,7 @@
 
         <!-- Initial Welcome / Empty State -->
         <div id="welcome-state" class="empty-state">
-          <div class="empty-state-icon">🌳</div>
+          <div class="empty-state-icon" aria-hidden="true">🌳</div>
           <h3>Plan Your Cool Walk</h3>
           <p>Enter your location and target walking time to generate custom loops that maximize tree canopy and building shadow.</p>
         </div>
@@ -234,7 +234,7 @@
       </div>
       
       <!-- The Map Div -->
-      <div id="map"></div>
+      <div id="map" role="region" aria-label="Interactive street map showing routes"></div>
     </main>
 
   </div>
