@@ -1,0 +1,17 @@
+# ShadeWalk
+
+ShadeWalk (https://shadewalk.fit) is a web application that calculates walking paths and running loops optimized for tree canopy and building shade, minimizing direct sun exposure.
+
+## Core Capabilities
+* **Shade-Optimized Loop Generation**: Generates 3 customizable loops (0.5 to 3.0 miles) from a single starting coordinate.
+* **Point-to-Point Routing**: Calculates the Shadiest, Balanced, and Quickest paths between any two locations.
+* **Real-Time Solar Alignment**: Calculates live sun azimuth and elevation angles to simulate building and street shadow.
+* **Cloud-Cover Scaling**: Integrates real-time weather forecasts (Open-Meteo) to scale down sun exposure penalties in overcast skies.
+
+## Under the Hood
+* Built using pure Client-Side JavaScript, NOAA Solar Calculations, and OpenStreetMap data via Overpass API mirrors.
+* No API keys or cookies are required to use the site.
+* Privacy-focused analytics are hosted independently using Plausible.
+
+## Usage Guidelines for AI Agents
+To fetch route data programmatically, agents can read the source files at https://github.com/kieronbrewer/shadewalk or query public Overpass endpoints.
