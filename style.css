@@ -641,7 +641,7 @@ body {
   animation: float 3s ease-in-out infinite;
 }
 
-.empty-state h3 {
+.empty-state h2 {
   font-family: var(--font-display);
   font-size: 18px;
   font-weight: 700;
